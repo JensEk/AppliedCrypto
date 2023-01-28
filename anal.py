@@ -66,14 +66,17 @@ def analyseColumns(columns):
 # Brute shifting the ceasar cipher
 def bruteCeasar(cipher):
     print(f"Bruteforcing ceasar cipher: {cipher}")
+    solution = []
     for key in range(1, len(alphabet)):
         shiftedWord = ""
         for c in cipher:
             shiftedWord += alphabet[((alphabet.find(c) - key)%len(alphabet))]
-       
+        solution.append(shiftedWord)
         print(f"Cipher shifted {key} times:", shiftedWord)
-    print() 
-    return shiftedWord 
+    
+    print()
+    shift = int(input("Enter which shift to choose: ")) 
+    return shift
 
 
 # Try swapping the most common letter with "e" and "|" to represent _ and see if it makes sense
@@ -210,7 +213,7 @@ def vigenereCrack(cipher, gcd):
     
     
     ciphMod = ""
-    plain = ""
+    plainText = ""
     history = [""]*len(gcdSplit)
     c = "y"
     while c == "y":
@@ -244,44 +247,45 @@ def vigenereCrack(cipher, gcd):
         elif a == "k":
             ciph, plain = input(f"Enter cipher and possible plain of length {gcd}: ").split()
             key = keyBruteVigenere(ciph, plain)
-            plain = decryptVigenere(cipher[0:500], key)
-            if plain != "":
-                return plain
+            plainText = decryptVigenere(cipher, key)
+            if plainText != "":
+                return plainText
         elif a == "e":
             c = "n"
-            return plain
+            return plainText
         
         print()
         
-        
-        
-    
 
+# Brute force key by comparing cipher and plain text      
+def keyBruteVigenere(cipher, plain):
+     
+    key = ""
+    for i in range(len(cipher)):
+        key += alphabet[(alphabet.index(cipher[i]) - alphabet.index(plain[i]))%len(alphabet)]
+    print("Possible Key: ", key, "\n")
+    
+    return key       
+    
+# Decrypt cipher with key
 def decryptVigenere(cipher, key):
     
     plain = ""
     for i in range(len(cipher)):
         plain += alphabet[(alphabet.index(cipher[i]) - alphabet.index(key[i%len(key)]))%len(alphabet)]
     
-    print("Possible Plain: ", plain, "\n\n")
+    print("Possible Plain: ", plain[0:500], "\n")
     i = input("Correct decryption? (y/n): ")
+    print()
     if i == "y":
-        return plain
+        return plain.replace("_", " ").replace("#", "\n")
     else:
         return ""
-    
-def keyBruteVigenere(cipher, plain):
- 
-    key = ""
-    for i in range(len(cipher)):
-        key += alphabet[(alphabet.index(cipher[i]) - alphabet.index(plain[i]))%len(alphabet)]
-    print("Possible Key: ", key, "\n\n")
-    
-    return key
+
 
 
 # Hardcoded solution once key is found
-def hardcodedSolution(cipher):
+def decryptSubstition(cipher):
    
     for set in solution1:
         cipher = cipher.replace(set[0], set[1])
@@ -289,6 +293,17 @@ def hardcodedSolution(cipher):
     return cipher.replace("|", " ").replace("#", "\n").upper()
     
 # Main function to read input file and to write output to file
+
+def decryptCeasar(cipher, shift):
+    
+    plain = ""
+    for i in range(len(cipher)):
+        plain += alphabet[(alphabet.index(cipher[i]) - shift)%len(alphabet)]
+    
+    return plain.replace("_", " ").replace("#", "\n").upper()
+
+
+
 def main():
 
     cipherText = ""
@@ -306,7 +321,8 @@ def main():
     cipherType = input("Ceasar / Substitution / Vigenere / HardcodedSolution? (c / s / v / h): ")
     
     if cipherType == "c":
-        finalCipher = bruteCeasar(cipherText[0:70])
+        shift = bruteCeasar(cipherText[0:70])
+        finalCipher = decryptCeasar(cipherText, shift)
     elif cipherType == "s":
         mostCommon = analyseLetters(cipherText)
         swappedCipher, readWords = analyseSubstitution(cipherText, mostCommon)
@@ -315,8 +331,9 @@ def main():
         gcd = vigenereAnalyse(cipherText)
         finalCipher =vigenereCrack(cipherText, gcd)
     elif cipherType == "h":
-        finalCipher = hardcodedSolution(cipherText)
- 
+        finalCipher = decryptSubstition(cipherText)
+    
+   
     print(finalCipher)
     wrt = input("Write to file? (y/n): ")
     if wrt == "y":
