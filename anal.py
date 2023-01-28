@@ -107,6 +107,7 @@ def analyzeWords(swapCipher):
     readWords = {}
     commonDoubles = {}
     
+    print("Words in cipher and amount: ", "\n")
     for word in swapCipher.split("|"):
         if word in readWords:
             readWords[word] += 1
@@ -121,8 +122,7 @@ def analyzeWords(swapCipher):
                     
     readWords = sorted(readWords.items(), key= lambda x:(len(x[0]), x[1]), reverse=True)
     for word in readWords:
-        if word[1] > 2:
-            print(str(word).replace("(", "").replace(")", ""))
+        print(str(word).replace("(", "").replace(")", ""))
     print()
     print("Common doubles: ", commonDoubles)
     return readWords
@@ -137,29 +137,30 @@ def swapLetter(swapCipher, readWords):
     history = []
     while cont == "y":
         x,y = input("Enter letters to swap X -> y: ").split()
-        copyCipher = copyCipher.replace(x, y)
-        for word in copyWords:
-            if x in word[0]:
-                copyWords[copyWords.index(word)] = (word[0].replace(x, y), word[1]) 
-    
-        print(f"Words after {x}->{y} : ")
-        for word in copyWords:
-            print(str(word).replace("(", "").replace(")", ""))
-        print()
-        print(f"Cipher after {x}->{y} : \n", copyCipher[0:700], "\n")
-        
-        
-        choice = input("Keep? (y/n): ")
-        if choice == "n":
-            copyCipher = copyCipher.replace(y, x)
+        if x != y:
+            copyCipher = copyCipher.replace(x, y)
             for word in copyWords:
-                if y in word[0]:
-                    copyWords[copyWords.index(word)] = (word[0].replace(y, x), word[1])
-            print(f"Cipher after {x}->{y} : \n", copyCipher[0:700], "\n")
-        else:
-            history.append((x,y))
-            print("History: ", history)
+                if x in word[0]:
+                    copyWords[copyWords.index(word)] = (word[0].replace(x, y), word[1]) 
         
+            print(f"Words after {x}->{y} : ")
+            for word in copyWords:
+                print(str(word).replace("(", "").replace(")", ""))
+            print()
+            print(f"Cipher after {x}->{y} : \n", copyCipher[0:700], "\n")
+        
+            
+            choice = input("Keep? (y/n): ")
+            if choice == "n":
+                copyCipher = copyCipher.replace(y, x)
+                for word in copyWords:
+                    if y in word[0]:
+                        copyWords[copyWords.index(word)] = (word[0].replace(y, x), word[1])
+                print(f"Cipher after {x}->{y} : \n", copyCipher[0:700], "\n")
+            else:
+                history.append((x,y))
+                print("History: ", history)
+            
         cont = input("Continue? (y/n): ")
         if cont == "n":
             return copyCipher.replace("|", " ").replace("#", "\n").upper()
