@@ -1,5 +1,4 @@
 # AppliedCrypto
 
-# Frequency analysis with ceasar and substitution cipher decryptions
-# Provide input for ciphertext and follow instructions
+Frequency analysis with ceasar and substitution cipher decryptions just provide input for ciphertext and follow instructions
 
