@@ -56,7 +56,8 @@ def analyseColumns(columns):
         
     for set in allCol:
         underscore.append(list(set.keys())[0])
-        print(f"Freq of {allCol.index(set)} : {set}", end="\n\n")  
+        print(f"Freq of {allCol.index(set)} : {set}", end="\n\n")
+          
     
     return underscore
  
@@ -122,7 +123,8 @@ def analyzeWords(swapCipher):
                     
     readWords = sorted(readWords.items(), key= lambda x:(len(x[0]), x[1]), reverse=True)
     for word in readWords:
-        print(str(word).replace("(", "").replace(")", ""))
+        if word[1] > 1:
+            print(str(word).replace("(", "").replace(")", ""))
     print()
     print("Common doubles: ", commonDoubles)
     return readWords
@@ -226,7 +228,7 @@ def vigenereCrack(cipher, gcd):
         print("English frequency: ", sorted(frequencyEng.items(), key= lambda x:(x[1]), reverse=True), "\n")
         mostCommonLetter = analyseColumns(gcdSplit)
         
-        a = input("SwapUnderscore / PrintCipher / SwapSingel / bruteKey / End? (u / p / s / k / e): ")
+        a = input("SwapUnderscore / PrintCipher / SwapSingel / bruteKey / knownPlain / End? (u / p / s / b / k / e): ")
         print()
         if a == "u":
             for i in range(len(gcdSplit)):
@@ -245,9 +247,17 @@ def vigenereCrack(cipher, gcd):
             if x != y:
                 gcdSplit[col] = gcdSplit[col].replace(x, y)
                 history[col] +=  (f"{x} -> {y}, ")
+        elif a == "b":
+            testKey = ['']*len(gcdSplit)
+            for i in range(len(gcdSplit)):
+                print(f"Shift key {i} to match English frequency:", "\n")
+                testKey[i] = keyBruteVigenere(gcdSplit[i])
+            plainText = decryptVigenere(cipher, testKey)
+            if plainText != "":
+                return plainText
         elif a == "k":
             ciph, plain = input(f"Enter cipher and possible plain of length {gcd}: ").split()
-            key = keyBruteVigenere(ciph, plain)
+            key = knownplainVigenere(ciph, plain)
             plainText = decryptVigenere(cipher, key)
             if plainText != "":
                 return plainText
@@ -257,9 +267,29 @@ def vigenereCrack(cipher, gcd):
         
         print()
         
+# Brute force key by shifting cipher and comparing to English frequency
+def keyBruteVigenere(cipher):
+    print(f"Shifting cipher: {cipher[0:150]}")
+    solution = []
+    for key in range(1, len(alphabet)):
+        shiftedWord = ""
+        for c in cipher:
+            shiftedWord += alphabet[((alphabet.find(c) - key)%len(alphabet))]
+        solution.append(shiftedWord)
+        print(f"Cipher shifted {key} times:", shiftedWord[0:150])
+        analyseLetters(shiftedWord)
+        d = input("Press enter to continue or q to quit: ")
+        if d == "q":
+            break
+    
+    print()
+    shift = int(input("Enter which shift to choose: ")) 
+    return alphabet[shift]
 
-# Brute force key by comparing cipher and plain text      
-def keyBruteVigenere(cipher, plain):
+
+
+# Brute force key by comparing cipher and potential plain text      
+def knownplainVigenere(cipher, plain):
      
     key = ""
     for i in range(len(cipher)):
@@ -271,6 +301,7 @@ def keyBruteVigenere(cipher, plain):
 # Decrypt cipher with key
 def decryptVigenere(cipher, key):
     
+    print(f"Decrypting with key {key}", "\n")
     plain = ""
     for i in range(len(cipher)):
         plain += alphabet[(alphabet.index(cipher[i]) - alphabet.index(key[i%len(key)]))%len(alphabet)]
@@ -286,9 +317,9 @@ def decryptVigenere(cipher, key):
 
 
 # Hardcoded solution once key is found
-def decryptSubstition(cipher):
+def decryptSubstition(cipher, solution):
    
-    for set in solution1:
+    for set in solution:
         cipher = cipher.replace(set[0], set[1])
 
     return cipher.replace("|", " ").replace("#", "\n").upper()
@@ -319,6 +350,7 @@ def main():
                 cipherText += line
     file.close()        
     
+    analyseLetters(cipherText)
     cipherType = input("Ceasar / Substitution / Vigenere / HardcodedSolution? (c / s / v / h): ")
     
     if cipherType == "c":
@@ -332,7 +364,7 @@ def main():
         gcd = vigenereAnalyse(cipherText)
         finalCipher =vigenereCrack(cipherText, gcd)
     elif cipherType == "h":
-        finalCipher = decryptSubstition(cipherText)
+        finalCipher = decryptSubstition(cipherText, solution1)
     
    
     print(finalCipher)
